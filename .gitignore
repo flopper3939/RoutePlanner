@@ -1,0 +1,24 @@
+# Build files
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.vscode/
+*.vs/
+*.csproj.user
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Dependency management
+packages/
+node_modules/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.cache
