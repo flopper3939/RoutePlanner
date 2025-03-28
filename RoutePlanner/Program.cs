@@ -1,21 +1,34 @@
 ﻿using System;
 using Microsoft.Office.Interop.Excel;
 
-class Program
+class RoutePlanner
 {
-    public static String googleAPIKey = "";
+    private static String googleAPIKey = "";
+    private static HttpClient _httpClient;
     static void Main(string[] args)
     {
+
+       
+        
+
+
+        _httpClient = new HttpClient();
         List<string> destinations = new List<string>();
         Console.WriteLine("Enter destinations (type 'done' to finish):");
 
         while (true)
         {
             Console.Write("Destination: ");
-            string input = Console.ReadLine();
+            String? input = Console.ReadLine();
+            if (input == null)
+            {
+                Console.WriteLine("Null string entered. Quitting.");
+                Console.ReadKey();
+                return;
+            }
             if (input.ToLower() == "done") break;
 
-            List<string> suggestions =  GetGoogleMapsSuggestions(input);
+            List<GooglePlace> suggestions =  GetGoogleMapsSuggestions(input);
             if (suggestions.Count == 0)
             {
                 Console.WriteLine("No matches found. Try again.");
@@ -32,7 +45,7 @@ class Program
                 Console.Write("Invalid choice. Select again: ");
 
             if (choice == 4) continue;
-            destinations.Add(suggestions[choice - 1]);
+            // destinations.Add(suggestions[choice - 1]);
         }
 
         if (destinations.Count < 2)
@@ -42,13 +55,18 @@ class Program
         }
 
         List<Route> shortestRoute = CalculateShortestRoute(destinations);
-        GenerateExcelReport(shortestRoute);
+        //GenerateExcelReport(shortestRoute);
     }
 
-    static List<string> GetGoogleMapsSuggestions(string query)
+    static List<GooglePlace> GetGoogleMapsSuggestions(string query)
     {
-        // Placeholder: Implement Google Maps API call
-        return new List<string> { "Match 1", "Match 2", "Match 3" };
+        HttpClient client = new HttpClient();
+        String url = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=" + Uri.EscapeDataString(query) + "&key=" + googleAPIKey;
+        HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+        HttpResponseMessage response = client.Send(requestMessage);
+        response.EnsureSuccessStatusCode();
+        String json = response.Content.ReadAsStringAsync().Result;
+        return GooglePlace.FromJsonList(json);
     }
 
     static List<Route> CalculateShortestRoute(List<string> destinations)
